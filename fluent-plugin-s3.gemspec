@@ -2,7 +2,7 @@
 $:.push File.expand_path('../lib', __FILE__)
 
 Gem::Specification.new do |gem|
-  gem.name        = "fluent-plugin-s3"
+  gem.name        = "fluent-plugin-s3-file-inclusion"
   gem.description = "Amazon S3 output plugin for Fluentd event collector"
   gem.license     = "Apache-2.0"
   gem.homepage    = "https://github.com/fluent/fluent-plugin-s3"

@@ -104,6 +104,8 @@ module Fluent::Plugin
       config_param :wait_time_seconds, :integer, default: 20
       desc "Polling error retry interval."
       config_param :retry_error_interval, :integer, default: 300
+      desc "regex to only process files"
+      config_param :include_file_regex, :string, default: ".*"
     end
 
     desc "Tag string"
@@ -156,6 +158,7 @@ module Fluent::Plugin
       response = sqs_client.get_queue_url(queue_name: @sqs.queue_name, queue_owner_aws_account_id: @sqs.queue_owner_aws_account_id)
       sqs_queue_url = response.queue_url
       log.debug("Succeeded to get SQS queue URL")
+      @include_file_regex = Regexp.new(@sqs.include_file_regex)
 
       @poller = Aws::SQS::QueuePoller.new(sqs_queue_url, client: sqs_client)
 
@@ -289,6 +292,11 @@ module Fluent::Plugin
       s3 = body["Records"].first["s3"]
       raw_key = s3["object"]["key"]
       key = CGI.unescape(raw_key)
+
+      unless key =~ @include_file_regex
+        log.info("#{key} doesn't match regex. skipping")
+        return
+      end
 
       io = @bucket.object(key).get.body
       content = @extractor.extract(io)
